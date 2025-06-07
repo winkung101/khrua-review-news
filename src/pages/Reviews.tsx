@@ -81,7 +81,7 @@ const Reviews = () => {
                     image={review.image_url || '/placeholder.svg'}
                     category={review.categories?.name || 'ทั่วไป'}
                     rating={review.rating}
-                    author={review.profiles?.full_name || 'ไม่ระบุผู้เขียน'}
+                    author="ผู้เขียน"
                     date={new Date(review.published_at).toLocaleDateString('th-TH')}
                     price={review.price_range}
                   />

@@ -92,7 +92,7 @@ const Review = () => {
             
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <span>โดย {review.profiles?.full_name || 'ไม่ระบุผู้เขียน'}</span>
+                <span>โดย ผู้เขียน</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />

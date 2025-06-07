@@ -80,7 +80,7 @@ const News = () => {
                     excerpt={article.excerpt || ''}
                     image={article.image_url || '/placeholder.svg'}
                     category={article.categories?.name || 'ทั่วไป'}
-                    author={article.profiles?.full_name || 'ไม่ระบุผู้เขียน'}
+                    author="ผู้เขียน"
                     date={new Date(article.published_at).toLocaleDateString('th-TH')}
                     readTime={article.read_time?.toString() || '5'}
                     featured={article.featured}

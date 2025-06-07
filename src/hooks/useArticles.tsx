@@ -11,13 +11,17 @@ export interface Article {
   image_url: string;
   featured: boolean;
   read_time: number;
+  views_count: number;
+  meta_title: string;
+  meta_description: string;
+  og_title: string;
+  og_description: string;
+  og_image: string;
   published_at: string;
+  author_id: string;
   categories: {
     name: string;
     slug: string;
-  };
-  profiles: {
-    full_name: string;
   };
 }
 
@@ -29,8 +33,7 @@ export const useArticles = (categorySlug?: string) => {
         .from('articles')
         .select(`
           *,
-          categories(name, slug),
-          profiles(full_name)
+          categories(name, slug)
         `)
         .eq('status', 'published')
         .order('published_at', { ascending: false });
@@ -59,8 +62,7 @@ export const useArticle = (slug: string) => {
         .from('articles')
         .select(`
           *,
-          categories(name, slug),
-          profiles(full_name)
+          categories(name, slug)
         `)
         .eq('slug', slug)
         .eq('status', 'published')
