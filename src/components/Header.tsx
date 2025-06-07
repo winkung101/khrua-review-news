@@ -1,12 +1,15 @@
 
-import { Menu, Search, User } from "lucide-react";
+import { Menu, Search, User, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut, isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -44,9 +47,42 @@ const Header = () => {
               className="pl-10 w-64"
             />
           </div>
-          <Button variant="ghost" size="icon">
-            <User className="w-5 h-5" />
-          </Button>
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <User className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  โปรไฟล์
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">
+                        <Settings className="mr-2 h-4 w-4" />
+                        แอดมิน
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  ออกจากระบบ
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild variant="outline">
+              <Link to="/auth">เข้าสู่ระบบ</Link>
+            </Button>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -92,6 +128,36 @@ const Header = () => {
             >
               เกี่ยวกับเรา
             </Link>
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="block py-2 text-foreground hover:text-primary transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    แอดมิน
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                  }}
+                  className="block py-2 text-foreground hover:text-primary transition-colors w-full text-left"
+                >
+                  ออกจากระบบ
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                className="block py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                เข้าสู่ระบบ
+              </Link>
+            )}
             <div className="pt-2">
               <Input
                 placeholder="ค้นหาข่าว..."

@@ -3,64 +3,39 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArticleCard from "@/components/ArticleCard";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useArticles } from "@/hooks/useArticles";
+import { useCategories } from "@/hooks/useCategories";
+import { Loader2 } from "lucide-react";
 
 const News = () => {
   const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: articles, isLoading: articlesLoading } = useArticles(
+    selectedCategory === "ทั้งหมด" ? undefined : selectedCategory
+  );
 
-  const categories = ["ทั้งหมด", "เทคโนโลยี", "ธุรกิจ", "สุขภาพ", "การศึกษา", "บันเทิง"];
+  const categoryOptions = categories ? ["ทั้งหมด", ...categories.map(cat => cat.name)] : ["ทั้งหมด"];
 
-  // Mock data - ในอนาคตจะดึงจาก Supabase
-  const articles = [
-    {
-      id: "1",
-      title: "ปัญญาประดิษฐ์จะเปลี่ยนโลกอย่างไรในปี 2024",
-      excerpt: "การพัฒนาของ AI ในปีนี้มีความก้าวหน้าอย่างน่าตื่นตาตื่นใจ จากการเรียนรู้ของเครื่องจักรไปจนถึงการประมวลผลภาษาธรรมชาติ...",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
-      category: "เทคโนโลยี",
-      author: "สมชาย ใจดี",
-      date: "7 มิ.ย. 2024",
-      readTime: "5",
-    },
-    {
-      id: "2",
-      title: "เศรษฐกิจไทยในครึ่งปีหลัง คาดการณ์และแนวโน้ม",
-      excerpt: "นักเศรษฐศาสตร์ชั้นนำวิเคราะห์สถานการณ์เศรษฐกิจไทยในช่วงครึ่งปีหลัง พร้อมแนะนำแนวทางการลงทุนที่เหมาะสม...",
-      image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=600&fit=crop",
-      category: "ธุรกิจ",
-      author: "วิชญา เศรษฐกิจ",
-      date: "6 มิ.ย. 2024",
-      readTime: "7",
-    },
-    {
-      id: "3",
-      title: "วิธีดูแลสุขภาพในช่วงหน้าฝน",
-      excerpt: "หน้าฝนมาแล้ว! ต้องดูแลสุขภาพอย่างไร เพื่อป้องกันโรคที่มักเกิดขึ้นในฤดูกาล รวมทั้งเคล็ดลับการเสริมสร้างภูมิคุ้มกัน...",
-      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop",
-      category: "สุขภาพ",
-      author: "หมอหญิง สุขใจ",
-      date: "5 มิ.ย. 2024",
-      readTime: "4",
-    },
-    {
-      id: "4",
-      title: "ระบบการศึกษาใหม่ เน้นทักษะในศตวรรษที่ 21",
-      excerpt: "การปฏิรูปการศึกษาไทยในยุคดิจิทัล เพื่อเตรียมเด็กไทยให้พร้อมสำหรับอนาคต ด้วยหลักสูตรที่เน้นการคิดเชิงวิเคราะห์...",
-      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop",
-      category: "การศึกษา",
-      author: "ครูใหญ่ วิชาการ",
-      date: "4 มิ.ย. 2024",
-      readTime: "6",
-    },
-  ];
-
-  const filteredArticles = selectedCategory === "ทั้งหมด" 
-    ? articles 
-    : articles.filter(article => article.category === selectedCategory);
+  if (categoriesLoading || articlesLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead 
+        title="ข่าวสาร - KhruaNews"
+        description="ติดตามข่าวสารล่าสุดจากทุกสาขา พร้อมการวิเคราะห์เชิงลึกและข้อมูลที่น่าเชื่อถือ"
+      />
       <Header />
       
       <main className="flex-1">
@@ -78,7 +53,7 @@ const News = () => {
         <section className="py-8">
           <div className="container mx-auto px-4">
             <div className="flex flex-wrap gap-2 justify-center">
-              {categories.map((category) => (
+              {categoryOptions.map((category) => (
                 <Button
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
@@ -95,18 +70,37 @@ const News = () => {
         {/* Articles Grid */}
         <section className="pb-16">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredArticles.map((article) => (
-                <ArticleCard key={article.id} {...article} />
-              ))}
-            </div>
+            {articles && articles.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {articles.map((article) => (
+                  <ArticleCard 
+                    key={article.id} 
+                    id={article.id}
+                    title={article.title}
+                    excerpt={article.excerpt || ''}
+                    image={article.image_url || '/placeholder.svg'}
+                    category={article.categories?.name || 'ทั่วไป'}
+                    author={article.profiles?.full_name || 'ไม่ระบุผู้เขียน'}
+                    date={new Date(article.published_at).toLocaleDateString('th-TH')}
+                    readTime={article.read_time?.toString() || '5'}
+                    featured={article.featured}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">ไม่พบข่าวสารในหมวดหมู่นี้</p>
+              </div>
+            )}
 
             {/* Load More Button */}
-            <div className="text-center mt-12">
-              <Button size="lg" variant="outline">
-                โหลดข่าวเพิ่มเติม
-              </Button>
-            </div>
+            {articles && articles.length > 0 && (
+              <div className="text-center mt-12">
+                <Button size="lg" variant="outline">
+                  โหลดข่าวเพิ่มเติม
+                </Button>
+              </div>
+            )}
           </div>
         </section>
       </main>

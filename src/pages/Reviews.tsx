@@ -3,67 +3,39 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ReviewCard from "@/components/ReviewCard";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
+import { useReviews } from "@/hooks/useReviews";
+import { useCategories } from "@/hooks/useCategories";
+import { Loader2 } from "lucide-react";
 
 const Reviews = () => {
   const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: reviews, isLoading: reviewsLoading } = useReviews(
+    selectedCategory === "ทั้งหมด" ? undefined : selectedCategory
+  );
 
-  const categories = ["ทั้งหมด", "อาหาร", "เทคโนโลยี", "ท่องเที่ยว", "ความงาม", "ไลฟ์สไตล์"];
+  const categoryOptions = categories ? ["ทั้งหมด", ...categories.map(cat => cat.name)] : ["ทั้งหมด"];
 
-  // Mock data - ในอนาคตจะดึงจาก Supabase
-  const reviews = [
-    {
-      id: "1",
-      title: "ร้านอาหารญี่ปุ่นสุดหรู ย่านสีลม",
-      excerpt: "บรรยากาศดี อาหารอร่อย ราคาค่อนข้างแพงแต่คุ้มค่า เหมาะสำหรับมื้อพิเศษ ซูชิสดมาก วาซาบิเข้มข้น...",
-      image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800&h=600&fit=crop",
-      category: "อาหาร",
-      rating: 4,
-      author: "นักชิม กินเก่ง",
-      date: "7 มิ.ย. 2024",
-      price: "฿฿฿",
-    },
-    {
-      id: "2",
-      title: "iPhone 15 Pro Max ใช้งานจริง 3 เดือน",
-      excerpt: "หลังจากใช้งานมา 3 เดือน สรุปข้อดีข้อเสียของ iPhone รุ่นใหม่ที่หลายคนรอคอย แบตเตอรี่อึด กล้องสวย ประสิทธิภาพดี...",
-      image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&h=600&fit=crop",
-      category: "เทคโนโลยี",
-      rating: 5,
-      author: "เทคไนท์ รีวิว",
-      date: "6 มิ.ย. 2024",
-      price: "฿฿฿฿",
-    },
-    {
-      id: "3",
-      title: "เที่ยวเชียงใหม่ 3 วัน 2 คืน งบประหยัด",
-      excerpt: "ไกด์เที่ยวเชียงใหม่ฉบับประหยัด แต่ได้ครบทุกประสบการณ์ จากวัดสวย ตลาดเด็ด อาหารอร่อย และที่พักน่ารัก...",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-      category: "ท่องเที่ยว",
-      rating: 4,
-      author: "เที่ยวไทย ท่องโลก",
-      date: "5 มิ.ย. 2024",
-      price: "฿฿",
-    },
-    {
-      id: "4",
-      title: "ครีมกันแดด SPF 50+ สำหรับผิวมัน",
-      excerpt: "ทดสอบครีมกันแดดสำหรับผิวมันที่ไม่เหนียวเหนอะหนะ ไม่อุดตัน กันแดดได้ดี เนื้อบางเบา ซึมซาบเร็ว...",
-      image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&h=600&fit=crop",
-      category: "ความงาม",
-      rating: 4,
-      author: "บิวตี้ เกิร์ล",
-      date: "4 มิ.ย. 2024",
-      price: "฿฿",
-    },
-  ];
-
-  const filteredReviews = selectedCategory === "ทั้งหมด" 
-    ? reviews 
-    : reviews.filter(review => review.category === selectedCategory);
+  if (categoriesLoading || reviewsLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead 
+        title="รีวิว - KhruaNews"
+        description="รีวิวสินค้าและบริการจากผู้เชี่ยวชาญ พร้อมคะแนนและข้อมูลที่ช่วยในการตัดสินใจ"
+      />
       <Header />
       
       <main className="flex-1">
@@ -81,7 +53,7 @@ const Reviews = () => {
         <section className="py-8">
           <div className="container mx-auto px-4">
             <div className="flex flex-wrap gap-2 justify-center">
-              {categories.map((category) => (
+              {categoryOptions.map((category) => (
                 <Button
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
@@ -98,18 +70,37 @@ const Reviews = () => {
         {/* Reviews Grid */}
         <section className="pb-16">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredReviews.map((review) => (
-                <ReviewCard key={review.id} {...review} />
-              ))}
-            </div>
+            {reviews && reviews.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {reviews.map((review) => (
+                  <ReviewCard 
+                    key={review.id} 
+                    id={review.id}
+                    title={review.title}
+                    excerpt={review.excerpt || ''}
+                    image={review.image_url || '/placeholder.svg'}
+                    category={review.categories?.name || 'ทั่วไป'}
+                    rating={review.rating}
+                    author={review.profiles?.full_name || 'ไม่ระบุผู้เขียน'}
+                    date={new Date(review.published_at).toLocaleDateString('th-TH')}
+                    price={review.price_range}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">ไม่พบรีวิวในหมวดหมู่นี้</p>
+              </div>
+            )}
 
             {/* Load More Button */}
-            <div className="text-center mt-12">
-              <Button size="lg" variant="outline">
-                โหลดรีวิวเพิ่มเติม
-              </Button>
-            </div>
+            {reviews && reviews.length > 0 && (
+              <div className="text-center mt-12">
+                <Button size="lg" variant="outline">
+                  โหลดรีวิวเพิ่มเติม
+                </Button>
+              </div>
+            )}
           </div>
         </section>
       </main>
